@@ -14,38 +14,39 @@ const url =
 // Fetch movies
 fetch(url)
 
-.then(response => response.json())
+.then(response => {
+
+    if(!response.ok){
+        throw new Error("API request failed");
+    }
+
+    return response.json();
+})
 
 .then(data => {
 
     const moviesDiv = document.getElementById("movies");
 
-    // Clear old content
     moviesDiv.innerHTML = "";
 
-    // If no movies found
-    if(data.results.length === 0){
+    if(!data.results || data.results.length === 0){
 
         moviesDiv.innerHTML = `
-            <h2>No movies found 😢</h2>
+            <h2>No movies found</h2>
         `;
 
         return;
     }
 
-    // Sort movies by rating (High → Low)
     data.results.sort((a,b) => b.vote_average - a.vote_average);
 
-    // Display movies
     data.results.forEach(movie => {
 
-        // Poster image
         const poster = movie.poster_path
         ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
         : "https://via.placeholder.com/300x450";
 
-        // Movie card
-        const movieCard = `
+        moviesDiv.innerHTML += `
 
             <div class="movie-card">
 
@@ -53,30 +54,25 @@ fetch(url)
 
                 <h2>${movie.title}</h2>
 
-                <p>⭐ Rating: ${movie.vote_average}</p>
+                <p>Rating: ${movie.vote_average}</p>
 
-                <p>📅 Release: ${movie.release_date}</p>
+                <p>Release: ${movie.release_date}</p>
 
                 <a href="movie.html?id=${movie.id}">
-                    🎬 Get Details
+                    Get Details
                 </a>
 
             </div>
 
         `;
-
-        moviesDiv.innerHTML += movieCard;
-
     });
 
 })
 
 .catch(error => {
 
-    console.log(error);
-
     document.getElementById("movies").innerHTML = `
-        <h2>Something went wrong 😢</h2>
+        <h2>Failed to load movies</h2>
+        <p>${error.message}</p>
     `;
-
 });
